@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mentor Micro-Coach</title>
+  <style>
+    body {font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; margin: 24px; color:#111;}
+    h1 {margin:0 0 16px;}
+    fieldset{border:1px solid #e5e7eb; border-radius:12px; padding:16px; margin-bottom:16px;}
+    label{display:block; font-weight:600; margin:.25rem 0;}
+    input, textarea, select{width:100%; padding:10px; border:1px solid #d1d5db; border-radius:8px; margin:.25rem 0 0.75rem;}
+    button{padding:10px 14px; border:0; border-radius:10px; background:#111827; color:#fff; cursor:pointer}
+    .row{display:grid; grid-template-columns:1fr 1fr; gap:16px}
+    .out{white-space:pre-wrap; background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px; padding:12px; min-height:160px}
+    .actions{display:flex; gap:8px; flex-wrap:wrap}
+    @media(max-width:900px){.row{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <h1>Mentor Micro-Coach (Women in Tech)</h1>
+  <p>Genera un <b>plan 1 página</b> y un <b>pitch de 5 slides</b> a partir de un brief corto.</p>
+
+  <form id="f">
+    <fieldset>
+      <legend><b>Brief</b></legend>
+      <label>Project name</label><input id="name" placeholder="e.g., Web Onboarding Lite" required />
+      <div class="row">
+        <div>
+          <label>Goal</label><input id="goal" placeholder="Capture contact + consent → app handoff" required />
+        </div>
+        <div>
+          <label>Audience / User</label><input id="aud" placeholder="Retail customers at POS" required />
+        </div>
+      </div>
+      <label>Problem</label><textarea id="problem" rows="3" placeholder="What pain are we solving?" required></textarea>
+      <div class="row">
+        <div>
+          <label>Success metric</label><input id="metric" placeholder="25% web→lead, 40% lead→app-open" required />
+        </div>
+        <div>
+          <label>Constraints</label><input id="constraints" placeholder="No KYC on web, Security approval" />
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>Timebox</label><input id="timebox" placeholder="24 hours" value="24 hours" />
+        </div>
+        <div>
+          <label>Tone</label>
+          <select id="tone">
+            <option value="concise">Concise</option>
+            <option value="friendly">Friendly</option>
+            <option value="executive">Executive</option>
+          </select>
+        </div>
+      </div>
+      <button type="submit">Generate plan & slides</button>
+    </fieldset>
+  </form>
+
+  <div class="row">
+    <fieldset>
+      <legend><b>Plan (1-page)</b></legend>
+      <div id="plan" class="out"></div>
+      <div class="actions">
+        <button type="button" onclick="copy('plan')">Copy</button>
+        <button type="button" onclick="download('plan','plan.md')">Download .md</button>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend><b>Pitch (5 slides)</b></legend>
+      <div id="slides" class="out"></div>
+      <div class="actions">
+        <button type="button" onclick="copy('slides')">Copy</button>
+        <button type="button" onclick="download('slides','slides.md')">Download .md</button>
+      </div>
+    </fieldset>
+  </div>
+
+  <script>
+    const el = id => document.getElementById(id);
+    function mkPlan(v){
+      const {name, goal, aud, problem, metric, constraints, timebox, tone} = v;
+      return `# ${name} — 1-Page Plan (${tone})
+## Problem
+${problem}
+
+## User
+${aud}
+
+## Goal
+${goal}
+
+## Success Metric
+${metric}
+
+## Scope (MVP)
+- Web form: contact + consent, value education
+- App handoff: deeplink / WhatsApp fallback
+- Tracking: views → lead → app open
+
+## Key Risks & Mitigations
+- Drop-off at handoff → clear CTA, deeplink + WA fallback
+- Security/privacy → no sensitive PII, consent copy, rate limits
+- Store ops friction → script for cashier, QR assets
+
+## Milestones (${timebox})
+- H0–H4: wireframe + copy
+- H4–H12: build + instrument
+- H12–H20: test + polish
+- H20–H24: demo & metrics
+
+## Metrics to show
+- CR web→lead, lead→app-open
+- Time to complete
+- Qualitative feedback (1–5)`;
+    }
+    function mkSlides(v){
+      const {name, goal, aud, problem, metric, constraints} = v;
+      return `# ${name} — 5-Slide Pitch
+1) Problem
+- ${problem}
+- Who: ${aud}
+- Why now
+
+2) Solution (MVP)
+- ${goal}
+- Contact + consent → app handoff
+- No KYC on web; ${constraints || 'minimal constraints'}
+
+3) How it works
+- QR → Web → WA/App
+- Events: view, lead, consent, app_open
+- Simple architecture (web + api or no-backend demo)
+
+4) Impact & Metrics
+- Target: ${metric}
+- Store time ↓, drop-offs ↓
+- Retake flow across channels
+
+5) Roadmap & Risks
+- Next: reminders, A/B, progressive KYC
+- Risks: security, ops, legal — mitigations in plan`;
+    }
+    function copy(id){
+      const text = el(id).innerText;
+      navigator.clipboard.writeText(text);
+      alert('Copied to clipboard');
+    }
+    function download(id, filename){
+      const blob = new Blob([el(id).innerText], {type:'text/markdown'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename; a.click();
+      URL.revokeObjectURL(url);
+    }
+    document.getElementById('f').addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const v = {
+        name: el('name').value.trim(),
+        goal: el('goal').value.trim(),
+        aud: el('aud').value.trim(),
+        problem: el('problem').value.trim(),
+        metric: el('metric').value.trim(),
+        constraints: el('constraints').value.trim(),
+        timebox: el('timebox').value.trim(),
+        tone: el('tone').value
+      };
+      el('plan').innerText = mkPlan(v);
+      el('slides').innerText = mkSlides(v);
+      window.scrollTo({top: document.body.scrollHeight, behavior:'smooth'});
+    });
+  </script>
+</body>
+</html>
