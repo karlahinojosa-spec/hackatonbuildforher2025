@@ -56,6 +56,8 @@
         </div>
       </div>
       <button type="submit">Generate plan & slides</button>
+      <button type="button" id="sample">Try sample brief</button>
+<button type="button" id="share">Share this brief</button>
     </fieldset>
   </form>
 
@@ -172,6 +174,43 @@ ${metric}
       el('slides').innerText = mkSlides(v);
       window.scrollTo({top: document.body.scrollHeight, behavior:'smooth'});
     });
-  </script>
+  <script>
+// botón de ejemplo
+document.getElementById('sample').addEventListener('click', ()=>{
+  el('name').value        = 'Mentor Micro-Coach';
+  el('goal').value        = 'From brief → 1-page plan + 5-slide pitch';
+  el('aud').value         = 'First-time hackathon participants';
+  el('problem').value     = 'People struggle to scope, plan and pitch within 24h';
+  el('metric').value      = 'Generate both assets in <3 min with ≥4/5 helpfulness';
+  el('constraints').value = 'No backend, no secrets; public demo';
+  el('timebox').value     = '24 hours';
+  el('tone').value        = 'executive';
+  document.getElementById('f').dispatchEvent(new Event('submit'));
+});
+
+// compartir brief por URL
+function qs(v){ return new URLSearchParams(v).toString(); }
+document.getElementById('share').addEventListener('click', ()=>{
+  const v = {
+    name: el('name').value, goal: el('goal').value, aud: el('aud').value,
+    problem: el('problem').value, metric: el('metric').value,
+    constraints: el('constraints').value, timebox: el('timebox').value,
+    tone: el('tone').value, autogen: '1'
+  };
+  const url = location.origin + location.pathname + '?' + qs(v);
+  navigator.clipboard.writeText(url);
+  alert('Link copied! Pégalo en Slack para abrir el brief prellenado.');
+});
+
+// prellenar desde URL y autogenerar
+(function(){
+  const p = new URLSearchParams(location.search);
+  ['name','goal','aud','problem','metric','constraints','timebox','tone'].forEach(k=>{
+    if(p.get(k)) el(k).value = p.get(k);
+  });
+  if(p.get('autogen')==='1') document.getElementById('f').dispatchEvent(new Event('submit'));
+})();
+</script>
+
 </body>
 </html>
