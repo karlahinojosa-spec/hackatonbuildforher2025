@@ -56,6 +56,8 @@
         </div>
       </div>
       <button type="submit">Generate plan & slides</button>
+      <button type="button" onclick="printView('plan','Plan')">Open print view (PDF)</button>
+      <button type="button" onclick="printView('slides','Slides')">Open print view (PDF)</button>
       <button type="button" id="sample">Try sample brief</button>
 <button type="button" id="share">Share this brief</button>
     </fieldset>
@@ -210,6 +212,25 @@ document.getElementById('share').addEventListener('click', ()=>{
   });
   if(p.get('autogen')==='1') document.getElementById('f').dispatchEvent(new Event('submit'));
 })();
+    function printView(id, title){
+  const content = document.getElementById(id).innerText;
+  const html = `
+  <!doctype html>
+  <meta charset="utf-8">
+  <title>${title}</title>
+  <style>
+    body{font-family: -apple-system, system-ui, Segoe UI, Roboto, Arial; margin:40px;}
+    pre{white-space: pre-wrap; line-height:1.35}
+    h1{margin-top:0}
+  </style>
+  <h1>${title}</h1>
+  <pre>${content.replace(/[&<>]/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;' }[c]))}</pre>`;
+  const w = window.open('', '_blank');
+  w.document.write(html);
+  w.document.close();
+  w.focus();
+  w.print(); // puedes cancelar y solo guardarlo como PDF
+}
 </script>
 
 </body>
